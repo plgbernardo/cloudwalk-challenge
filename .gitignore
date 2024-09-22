@@ -3,3 +3,7 @@ venv
 
 # Environment variables.
 .env
+
+# Local .JSON files.
+match_info.json
+mod_info.json 
