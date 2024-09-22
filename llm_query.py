@@ -22,8 +22,8 @@ def ask_llm(question, parse_path, mod_path):
     # Prepare the chat-style input with system, user, and assistant roles.
     messages = [
         {"role": "system", "content": "You are an assistant who is an expert in analyzing Quake game match data in JSON format."},
-        {"role": "user", "content": f"The following is a JSON structure representing Quake game matches and player stats:\n{json.dumps(parse_path, indent=2)}\n\nBased on this data, please answer the following question: {question}"},
-        {"role": "user", "content": f"The following is a JSON structure representing Quake game types os death registred in each game:\n{json.dumps(mod_path, indent=2)}\n\nBased on this data, please answer the following question: {question}"}
+        {"role": "user", "content": f"The following is a JSON structure representing Quake game matches and player stats:\n{json.dumps(parse_path, indent=2)}\nand these are the means of death for every game:\n{json.dumps(mod_path, indent=2)}"},
+        {"role": "user", "content": question},
     ]
 
     # Make request to OpenAI GPT chosen model.
