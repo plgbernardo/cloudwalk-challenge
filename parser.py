@@ -12,19 +12,19 @@ def parse_log(file_path):
             # Check if a new game has started and finalize the current one (if any).
             if "InitGame:" in line:
                 if current_match:
-                    finalize_match(current_match, match_data)
+                    process_match(current_match, match_data)
                 # Initialize a new game session.
                 current_match = {"total_kills": 0, "players": set(), "kills_dict": {}}
 
             # Check if the current game has ended.
             elif "ShutdownGame:" in line:
                 if current_match:
-                    finalize_match(current_match, match_data)
+                    process_match(current_match, match_data)
                     current_match = None
 
             # Check if a kill event happened.
             elif "Kill:" in line:
-                current_match.total_kills += 1
+                current_match["total_kills"] += 1
                 process_kill_event(current_match, line)
 
             # Check if any player has joined the session.
@@ -33,7 +33,7 @@ def parse_log(file_path):
     
     # End the last match case hasn't been finalized after the loop.
     if current_match:
-        finalize_match(current_match, match_data)
+        process_match(current_match, match_data)
 
     return match_data
 
@@ -46,19 +46,19 @@ def process_kill_event(current_match, line):
 
         # Check if the killer was a player to increment his score.
         if killer != "<world>":
-            current_match.kills_dict[killer] = current_match.kills_dict.get(killer, 0) + 1
+            current_match["kills_dict"][killer] = current_match["kills_dict"].get(killer, 0) + 1
             current_match["players"].add(killer)
 
         # Add the victim to "players" list (for total kills) even if "<world>" kills them.
         current_match["players"].add(victim)
 
-def finalize_match(current_match, match_data):
+def process_match(current_match, match_data):
     # Assign a new game ID and store the results of the current match.
     match_id = f"game_{len(match_data) + 1}"
     match_data[match_id] = {
-        "total_kills": current_match.total_kills,
+        "total_kills": current_match["total_kills"],
         "players": list(current_match["players"]),
-        "kills": {player: current_match.kills_dict.get(player, 0) for player in current_match["players"]}
+        "kills": {player: current_match["kills_dict"].get(player, 0) for player in current_match["players"]}
     }
 
 def add_player(current_match, line):
@@ -68,8 +68,8 @@ def add_player(current_match, line):
         player_name = match.group(2).strip()
         current_match["players"].add(player_name)
         # Initialize player's kill count if haven't been added yet.
-        if player_name not in current_match.kills_dict:
-            current_match.kills_dict[player_name] = 0
+        if player_name not in current_match["kills_dict"]:
+            current_match["kills_dict"][player_name] = 0
 
 # Set the log file path.
 file_path = "qgames.log"
