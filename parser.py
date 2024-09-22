@@ -4,7 +4,6 @@ import re
 def parse_log(file_path):
     match_data = {}
     current_match = None
-    total_kills = 0
     kills_dict = {}
 
     # Open and read the log file.
@@ -14,21 +13,20 @@ def parse_log(file_path):
             # Check if a new game has started and finalize the current one (if any).
             if "InitGame:" in line:
                 if current_match:
-                    finalize_match(current_match, total_kills, kills_dict, match_data)
+                    finalize_match(current_match, kills_dict, match_data)
                 # Initialize a new game session.
                 current_match = {"total_kills": 0, "players": set()}
-                total_kills = 0
                 kills_dict = {}
 
             # Check if the current game has ended.
             elif "ShutdownGame:" in line:
                 if current_match:
-                    finalize_match(current_match, total_kills, kills_dict, match_data)
+                    finalize_match(current_match, kills_dict, match_data)
                     current_match = None
 
             # Check if a kill event happened.
             elif "Kill:" in line:
-                total_kills += 1
+                current_match.total_kills += 1
                 process_kill_event(current_match, line, kills_dict)
 
             # Check if any player has joined the session.
@@ -37,7 +35,7 @@ def parse_log(file_path):
     
     # End the last match case hasn't been finalized after the loop.
     if current_match:
-        finalize_match(current_match, total_kills, kills_dict, match_data)
+        finalize_match(current_match, kills_dict, match_data)
 
     return match_data
 
@@ -56,11 +54,11 @@ def process_kill_event(current_match, line, kills_dict):
         # Add the victim to "players" list (for total kills) even if "<world>" kills them.
         current_match["players"].add(victim)
 
-def finalize_match(current_match, total_kills, kills_dict, match_data):
+def finalize_match(current_match, kills_dict, match_data):
     # Assign a new game ID and store the results of the current match.
     match_id = f"game_{len(match_data) + 1}"
     match_data[match_id] = {
-        "total_kills": total_kills,
+        "total_kills": current_match.total_kills,
         "players": list(current_match["players"]),
         "kills": {player: kills_dict.get(player, 0) for player in current_match["players"]}
     }
