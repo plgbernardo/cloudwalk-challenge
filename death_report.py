@@ -54,5 +54,11 @@ file_path = "qgames.log"
 # Parse the log file and store the results.
 match_data = parse_log(file_path)
 
+# Save parsed data to a JSON file
+with open("mod_info.json", "w") as f:
+    json.dump(match_data, f, indent=2)
+
+print("Match data parsed and saved to match_data.json")
+
 # Print the parsed data in JSON format.
 print(json.dumps(match_data, indent=2))
