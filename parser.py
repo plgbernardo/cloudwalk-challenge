@@ -1,35 +1,33 @@
 import json
 import re
 
-def parse_log(file_path):
+def parse_log(file_content):
     matches_data = {}
     current_match = None
 
-    # Open and read the log file.
-    with open(file_path, 'r') as file:
-        # Search each line for specific keywords.
-        for line in file:
-            # Check if a new game has started and finalize the current one (if any).
-            if "InitGame:" in line:
-                if current_match:
-                    process_match(current_match, matches_data)
-                # Initialize a new game session.
-                current_match = {"total_kills": 0, "players": set(), "kills_data": {}}
+    # Iterate each line for specific keywords.
+    for line in file_content.splitlines():
+        # Check if a new game has started and process the current one (if any).
+        if "InitGame:" in line:
+            if current_match:
+                process_match(current_match, matches_data)
+            # Initialize a new game session.
+            current_match = {"total_kills": 0, "players": set(), "kills_data": {}}
 
-            # Check if the current game has ended.
-            elif "ShutdownGame:" in line:
-                if current_match:
-                    process_match(current_match, matches_data)
-                    current_match = None
+        # Check if the current game has ended.
+        elif "ShutdownGame:" in line:
+            if current_match:
+                process_match(current_match, matches_data)
+                current_match = None
 
-            # Check if a kill event happened.
-            elif "Kill:" in line:
-                current_match["total_kills"] += 1
-                process_kill_event(current_match, line)
+        # Check if a kill event happened.
+        elif "Kill:" in line:
+            current_match["total_kills"] += 1
+            process_kill_event(current_match, line)
 
-            # Check if any player has joined the session.
-            elif "ClientUserinfoChanged:" in line:
-                add_player(current_match, line)
+        # Check if any player has joined the session.
+        elif "ClientUserinfoChanged:" in line:
+            add_player(current_match, line)
     
     # End the last match case hasn't been finalized after the loop.
     if current_match:
@@ -70,16 +68,26 @@ def add_player(current_match, line):
         if player_name not in current_match["kills_data"]:
             current_match["kills_data"][player_name] = 0
 
+def read_json(file_path):
+    # Open the file in read mode.
+    with open(file_path, 'r') as file:
+        # Read the file's content into a string.
+        file_content = file.read()
+    
+    return file_content
+
 # Set the log file path.
 file_path = "qgames.log"
-# Parse the log file and store the results.
-matches_data = parse_log(file_path)
 
-# Save parsed data to a JSON file
+# Get the file content.
+file_content = read_json(file_path)
+
+# Parse the log file and store the results.
+matches_data = parse_log(file_content)
+
+# Save parsed data to a JSON file.
 with open("match_info.json", "w") as f:
     json.dump(matches_data, f, indent=2)
-
-print("Match data parsed and saved to matches_data.json")
 
 # Print parsed data in JSON format.
 print(json.dumps(matches_data, indent=2))
