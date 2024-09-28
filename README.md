@@ -29,8 +29,8 @@ requirements.txt              # Non-built-in package dependencies
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/plgbernardo/cloudwalk-challenge
-   cd cloudwalk-challenge
+   git clone https://github.com/plgbernardo/quake-log-parser
+   cd quake-log-parser
    ```
 
 2. **Install dependencies**:
